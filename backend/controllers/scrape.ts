@@ -120,6 +120,15 @@ export const SouthstarController = async (req: Request, res: Response) => {
     });
 }
 
+
+const BROWSER = puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    headless: true,
+});
+const PAGE = BROWSER.then(browser => browser.newPage());
+
+
+
 async function tgp(SEARCH_TERM: string): Promise<Product[]> {
     console.log("TGP" + "\n");
     const TGP_URL = "https://tgp.com.ph/search?controller=search&s=" + SEARCH_TERM;
@@ -132,10 +141,8 @@ async function tgp(SEARCH_TERM: string): Promise<Product[]> {
 
     await page.goto(TGP_URL);
 
-    await page.screenshot({ path: "TGP.png" });
-
     // Set screen size.
-    await page.setViewport({ width: 1080, height: 1024 });
+    await page.setViewport({ width: 300, height: 300 });
 
     // const productsHandles = await page.$$('#products > #js-product-list'); working to
     // const productsHandles = await page.$$('#js-product-list > *');
@@ -177,10 +184,9 @@ async function southstar(SEARCH_TERM: string): Promise<Product[]> {
 
     // Navigate the page to a URL.
     await page.goto(URL);
-    await page.screenshot({ path: "example.png" });
 
     // Set screen size.
-    await page.setViewport({ width: 1080, height: 1024 });
+    await page.setViewport({ width: 300, height: 300 });
     const productsHandles = await page.$$('.boost-sd__product-list > .boost-sd__product-item');
 
     const products: Product[] = [];
