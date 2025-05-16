@@ -1,5 +1,5 @@
 import { useState, type KeyboardEvent } from 'react';
-import { Search, Pill, DollarSign, ExternalLink, PackageX } from 'lucide-react';
+import { Search, Pill, PackageX } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
