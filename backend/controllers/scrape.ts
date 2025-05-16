@@ -23,7 +23,14 @@ export const TGPController = async (req: Request, res: Response) => {
     const TGP_URL = "https://tgp.com.ph/search?controller=search&s=" + SEARCH_TERM;
 
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-accelerated-2d-canvas',
+            
+        ],
         headless: true,
     });
     const page = await browser.newPage();
@@ -75,7 +82,14 @@ export const SouthstarController = async (req: Request, res: Response) => {
     const URL = `https://southstardrug.com.ph/search?q=${SEARCH_TERM}&options%5Bprefix%5D=last`
     // Launch the browser and open a new blank page
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-accelerated-2d-canvas',
+            
+        ],
         headless: true,
     });
     const page = await browser.newPage();
@@ -124,7 +138,14 @@ async function tgp(SEARCH_TERM: string): Promise<Product[]> {
     const TGP_URL = "https://tgp.com.ph/search?controller=search&s=" + SEARCH_TERM;
 
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-accelerated-2d-canvas',
+            
+        ],
         headless: true,
     });
     const page = await browser.newPage();
@@ -169,7 +190,14 @@ async function southstar(SEARCH_TERM: string): Promise<Product[]> {
     const URL = `https://southstardrug.com.ph/search?q=${SEARCH_TERM}&options%5Bprefix%5D=last`
     // Launch the browser and open a new blank page
     const browser = await puppeteer.launch({
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--disable-accelerated-2d-canvas',
+            
+        ],
         headless: true,
     });
     const page = await browser.newPage();
