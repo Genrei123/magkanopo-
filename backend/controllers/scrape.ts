@@ -6,22 +6,7 @@ interface Product {
     price: string | null | undefined;
 }
 
-interface SearchResult {
-    status: string;
-    message: string;
-    data: {
-        site: {
-            title: string;
-            price: string;
-        }
-    };
-}
-
-
-
-
 async function tgp(SEARCH_TERM: string): Promise<Product[]> {
-    console.log("TGP" + "\n");
     const TGP_URL = "https://tgp.com.ph/search?controller=search&s=" + SEARCH_TERM;
 
     const browser = await puppeteer.launch({
@@ -104,13 +89,61 @@ async function southstar(SEARCH_TERM: string): Promise<Product[]> {
     return products;
 }
 
+async function watsons(SEARCH_TERM: string): Promise<Product[]> {
+    const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3';
+    const URL = `https://www.watsons.com.ph/search?text=${SEARCH_TERM}`
+    // Launch the browser and open a new blank page
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+    });
+    const page = await browser.newPage();
+    page.setUserAgent(userAgent);
 
+    // Navigate the page to a URL.
+    await page.goto(URL, {
+        waitUntil: ['networkidle2', 'domcontentloaded', 'networkidle0'],
+    });
+
+    
+
+    // Set screen size.
+    await page.setViewport({ width: 1366, height: 768 });
+    // Wait for at least one of the product containers to be available
+    await page.waitForSelector('.cx-product-container > .product-container.gridMode.ng-star-inserted');
+
+    const productsHandles = await page.$$('.cx-product-container > .product-container.gridMode.ng-star-inserted > .ng-star-inserted');
+
+    const products: Product[] = [];
+    for (const productsHandle of productsHandles) {
+
+        try {
+            const title = await page.evaluate(el => el.querySelector(".productName")?.textContent, productsHandle);
+            const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const price = await page.evaluate(el => el.querySelector(".formatted-value.ng-star-inserted")?.textContent, productsHandle);
+            const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            
+            products.push({
+                title: formatTitle,
+                price: formatPrice
+            });
+
+        } catch (error) { 
+            console.log("Error: " + error);
+            console.log("Error: " + productsHandle);
+        }
+
+    }
+    await browser.close();
+    return products;
+}
 
 
 export const allController = async (req: Request, res: Response) => {
     const SEARCH_TERM = req.query.SEARCH_TERM;
     const tgpProducts = await tgp(SEARCH_TERM as string);
     const southstarProducts = await southstar(SEARCH_TERM as string);
+    const watsonsProducts = await watsons(SEARCH_TERM as string);
 
     
     const data = [];
@@ -128,12 +161,20 @@ export const allController = async (req: Request, res: Response) => {
         }
     }
 
+    for (let i = 0; i < watsonsProducts.length; i++) {
+        data[i + tgpProducts.length + southstarProducts.length] = {
+            title: watsonsProducts[i].title,
+            price: watsonsProducts[i].price,
+        }
+    }
+
     res.status(200).json({
         status: "success",
         message: "Scraping completed successfully",
         data: {
             TGP: tgpProducts,
             Southstar: southstarProducts,
+            Watsons: watsonsProducts,
         }
     });
 }
