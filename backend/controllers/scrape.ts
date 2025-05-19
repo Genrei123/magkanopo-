@@ -101,9 +101,7 @@ async function watsons(SEARCH_TERM: string): Promise<Product[]> {
     page.setUserAgent(userAgent);
 
     // Navigate the page to a URL.
-    await page.goto(URL, {
-        waitUntil: ['networkidle2', 'domcontentloaded', 'networkidle0'],
-    });
+    await page.goto(URL);
 
     
 
@@ -138,12 +136,87 @@ async function watsons(SEARCH_TERM: string): Promise<Product[]> {
     return products;
 }
 
+async function rose(SEARCH_TERM: string): Promise<Product[]> {
+    const URL = `https://www.rosepharmacy.com/?s=${SEARCH_TERM}&post_type=product`;
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+    });
+    const page = await browser.newPage();
+    await page.goto(URL);
+
+    await page.setViewport({ width: 300, height: 300 });
+
+    await page.waitForSelector('.wpb_wrapper.vc_column-inner');
+    const productHandles = await page.$$('.porto-posts-grid.porto-posts-grid-75121fa532f6c490d02770d2b728412e > .products-container > .porto-tb-item');
+    
+    const products: Product[] = [];
+    for (const productHandle of productHandles) {
+        try {
+            const title = await page.evaluate(el => el.querySelector(".post-title")?.textContent, productHandle);
+            const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const price = await page.evaluate(el => el.querySelector(".woocommerce-Price-amount.amount")?.textContent, productHandle);
+            const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            
+            products.push({
+                title: formatTitle,
+                price: formatPrice
+            });
+
+        } catch (error) { 
+            console.log("Error: " + error);
+            console.log("Error: " + productHandle);
+        }
+
+    }
+    await browser.close();
+    return products;
+}
+
+async function getmeds(SEARCH_TERM: string): Promise<Product[]> {
+    const URL = `https://getmeds.ph/search?s=${SEARCH_TERM}`;
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        headless: true,
+    });
+    const page = await browser.newPage();
+    await page.goto(URL);
+
+    await page.setViewport({ width: 300, height: 300 });
+
+    await page.waitForSelector('.product_list_outer');
+    const productHandles = await page.$$('.product_list_outer > .row.product_list > .col-md-4.col-sm-6 > .product_item');
+
+    const products: Product[] = [];
+    for (const productHandle of productHandles) {
+        try {
+            const title = await page.evaluate(el => el.querySelector(".product_item_title")?.textContent, productHandle);
+            const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const price = await page.evaluate(el => el.querySelector(".product-list-price")?.textContent, productHandle);
+            const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            
+            products.push({
+                title: formatTitle,
+                price: formatPrice
+            });
+
+        } catch (error) { 
+            console.log("Error: " + error);
+            console.log("Error: " + productHandle);
+        }
+
+    }
+    await browser.close();
+    return products;
+}
 
 export const allController = async (req: Request, res: Response) => {
     const SEARCH_TERM = req.query.SEARCH_TERM;
     const tgpProducts = await tgp(SEARCH_TERM as string);
     const southstarProducts = await southstar(SEARCH_TERM as string);
     const watsonsProducts = await watsons(SEARCH_TERM as string);
+    const roseProducts = await rose(SEARCH_TERM as string);
+    const getMedsProducts = await getmeds(SEARCH_TERM as string);
 
     
     const data = [];
@@ -168,6 +241,22 @@ export const allController = async (req: Request, res: Response) => {
         }
     }
 
+    for (let i = 0; i < roseProducts.length; i++) {
+        data[i + tgpProducts.length + southstarProducts.length + watsonsProducts.length] = {
+            title: roseProducts[i].title,
+            price: roseProducts[i].price,
+        }
+    }
+
+    for (let i = 0; i < getMedsProducts.length; i++) {
+        data[i + tgpProducts.length + southstarProducts.length + watsonsProducts.length + roseProducts.length] = {
+            title: getMedsProducts[i].title,
+            price: getMedsProducts[i].price,
+        }
+    }
+
+
+
     res.status(200).json({
         status: "success",
         message: "Scraping completed successfully",
@@ -175,6 +264,8 @@ export const allController = async (req: Request, res: Response) => {
             TGP: tgpProducts,
             Southstar: southstarProducts,
             Watsons: watsonsProducts,
+            Rose_Pharmacy: roseProducts,
+            GetMeds: getMedsProducts,
         }
     });
 }

@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import axiosInstance from './api/axiosInstance';
+import * as XLSX from 'xlsx'
 
 // Define TypeScript interfaces for the data structure
 interface Product {
@@ -27,6 +28,30 @@ function App() {
   const [activeTab, setActiveTab] = useState<string>('all');
   // State to track if search has been performed
   const [hasSearched, setHasSearched] = useState<boolean>(false);
+
+  const exportToExcel = (data: SearchResults) => {
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Iterate over each source in the data
+    Object.keys(data).forEach((source) => {
+      // Map the products to the desired format
+      const products = data[source].map((product) => ({
+        Source: source,
+        Title: product.title,
+        Price: product.price,
+      }));
+      
+      // Create a worksheet for this source
+      const sourceSheet = XLSX.utils.json_to_sheet(products);
+      
+      // Append the worksheet to the workbook
+      XLSX.utils.book_append_sheet(workbook, sourceSheet, source);
+    });
+
+    // Save the workbook to a file
+    XLSX.writeFile(workbook, 'search_results.xlsx');
+  };
 
   const handleSearch = async () => {
     try {
@@ -219,7 +244,17 @@ function App() {
         {/* Search Results Display */}
         {!isLoading && searchResults && Object.keys(searchResults).length > 0 && (
           <div className="bg-white rounded-lg shadow-md p-6 animate-fadeIn">
-            <h2 className="text-2xl font-bold mb-6 text-slate-800">Search Results</h2>
+            <div className = "flex flex-col items-center mb-4">
+              <h2 className="text-2xl font-bold mb-6 text-slate-800">Search Results</h2>
+              <Button
+                variant="outline"
+                className="bg-teal-600 hover:bg-teal-700 text-white h-auto py-3"
+                onClick={() => exportToExcel(searchResults)}
+              >
+                Download Results
+              </Button>
+              
+            </div>
 
             {/* Tabs for sources */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
