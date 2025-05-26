@@ -1,6 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('path')
-const server_app  = require('./backend/server').default;
+const server_app  = require(path.join(__dirname, './backend/server.js'));
 console.log('Server imported and started')
 
 let win;
