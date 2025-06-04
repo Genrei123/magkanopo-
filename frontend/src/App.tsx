@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx'
 interface Product {
   title: string;
   price: string;
+  link: string;
 }
 
 interface SearchResults {
@@ -40,6 +41,7 @@ function App() {
         Source: source,
         Title: product.title,
         Price: product.price,
+        Link: product.link
       }));
       
       // Create a worksheet for this source
@@ -126,7 +128,7 @@ function App() {
   );
 
   // Product Card Component (inline)
-  const ProductCard = ({ product, source, index }: { product: Product; source: string; index: number }) => (
+  const ProductCard = ({ product, source, index, link }: { product: Product; source: string; index: number, link?: string }) => (
     <Card 
       className="overflow-hidden transition-all duration-300 hover:shadow-md border-slate-200 hover:-translate-y-1"
       style={{
@@ -145,6 +147,7 @@ function App() {
           <div className="flex items-center text-teal-700 font-bold text-xl">
             <span>{product.price.replace("PHP", "")}</span>
           </div>
+          <a href={product.link}>Go to medicine..</a>
         </div>
       </CardContent>
     </Card>

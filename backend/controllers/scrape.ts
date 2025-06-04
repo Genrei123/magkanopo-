@@ -4,6 +4,7 @@ import puppeteer from 'puppeteer';
 interface Product {
     title: string | null | undefined;
     price: string | null | undefined;
+    link: string | null | undefined;
 }
 
 async function tgp(SEARCH_TERM: string): Promise<Product[]> {
@@ -32,10 +33,12 @@ async function tgp(SEARCH_TERM: string): Promise<Product[]> {
             const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
             const price = await page.evaluate(el => el.querySelector(".price")?.textContent, productsHandle);
             const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const link = await page.evaluate(el => el.querySelector(".thumbnail-top a")?.getAttribute('href'), productsHandle);
         
             products.push({
                 title: formatTitle,
-                price: formatPrice
+                price: formatPrice,
+                link: link
             });
 
         } catch (error) {
@@ -73,10 +76,12 @@ async function southstar(SEARCH_TERM: string): Promise<Product[]> {
             const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
             const price = await page.evaluate(el => el.querySelector(".boost-sd__format-currency")?.textContent, productsHandle);
             const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const link = await page.evaluate(el => el.querySelector(".boost-sd__product-link")?.getAttribute('href'), productsHandle);
             
             products.push({
                 title: formatTitle,
-                price: formatPrice
+                price: formatPrice,
+                link: "https://southstardrug.com.ph" + link
             });
 
         } catch (error) { 
@@ -120,10 +125,12 @@ async function watsons(SEARCH_TERM: string): Promise<Product[]> {
             const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
             const price = await page.evaluate(el => el.querySelector(".formatted-value.ng-star-inserted")?.textContent, productsHandle);
             const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const link = await page.evaluate(el => el.querySelector(".productBottom a")?.getAttribute('href'), productsHandle);
             
             products.push({
                 title: formatTitle,
-                price: formatPrice
+                price: formatPrice,
+                link: "https://www.watsons.com.ph" + link
             });
 
         } catch (error) { 
@@ -157,10 +164,12 @@ async function rose(SEARCH_TERM: string): Promise<Product[]> {
             const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
             const price = await page.evaluate(el => el.querySelector(".woocommerce-Price-amount.amount")?.textContent, productHandle);
             const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const link = await page.evaluate(el => el.querySelector(".porto-tb-featured-image a")?.getAttribute('href'), productHandle);
             
             products.push({
                 title: formatTitle,
-                price: formatPrice
+                price: formatPrice,
+                link: link
             });
 
         } catch (error) { 
@@ -194,10 +203,13 @@ async function getmeds(SEARCH_TERM: string): Promise<Product[]> {
             const formatTitle = title?.replace(/(\r\n|\n|\r)/gm, "").trim();
             const price = await page.evaluate(el => el.querySelector(".product-list-price")?.textContent, productHandle);
             const formatPrice = price?.replace(/(\r\n|\n|\r)/gm, "").trim();
+            const link = await page.evaluate(el => el.querySelector(".product_item a")?.getAttribute('href'), productHandle);
+
             
             products.push({
                 title: formatTitle,
-                price: formatPrice
+                price: formatPrice,
+                link: link
             });
 
         } catch (error) { 
@@ -224,6 +236,7 @@ export const allController = async (req: Request, res: Response) => {
         data[i] = {
             title: tgpProducts[i].title,
             price: tgpProducts[i].price,
+            link: tgpProducts[i].link
         }
     }
 
@@ -231,6 +244,7 @@ export const allController = async (req: Request, res: Response) => {
         data[i + tgpProducts.length] = {
             title: southstarProducts[i].title,
             price: southstarProducts[i].price,
+            link: southstarProducts[i].link
         }
     }
 
@@ -238,6 +252,7 @@ export const allController = async (req: Request, res: Response) => {
         data[i + tgpProducts.length + southstarProducts.length] = {
             title: watsonsProducts[i].title,
             price: watsonsProducts[i].price,
+            link: watsonsProducts[i].link
         }
     }
 
@@ -245,6 +260,7 @@ export const allController = async (req: Request, res: Response) => {
         data[i + tgpProducts.length + southstarProducts.length + watsonsProducts.length] = {
             title: roseProducts[i].title,
             price: roseProducts[i].price,
+            link: roseProducts[i].link
         }
     }
 
@@ -252,6 +268,7 @@ export const allController = async (req: Request, res: Response) => {
         data[i + tgpProducts.length + southstarProducts.length + watsonsProducts.length + roseProducts.length] = {
             title: getMedsProducts[i].title,
             price: getMedsProducts[i].price,
+            link: getMedsProducts[i].link
         }
     }
 
